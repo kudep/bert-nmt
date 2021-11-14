@@ -19,7 +19,7 @@ from bert import BertTokenizer
 
 Batch = namedtuple('Batch', 'ids src_tokens src_lengths bert_input')
 Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments')
-
+bertdict = None
 
 def buffered_read(input, buffer_size):
     buffer = []
@@ -41,10 +41,12 @@ def make_batches(lines, args, task, max_positions, encode_fn):
     tokens = [
         task.source_dictionary.encode_line(
             encode_fn(src_str), add_if_not_exist=False
-        ).long()
+        ).long() 
         for src_str in lines
     ]
-    bertdict = BertTokenizer.from_pretrained(args.bert_model_name)
+    global bertdict
+    if bertdict is None:
+        bertdict = BertTokenizer.from_pretrained(args.bert_model_name)
     def getbert(line):
         line = line.strip()
         line = '{} {} {}'.format('[CLS]', line, '[SEP]')
